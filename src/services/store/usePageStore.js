@@ -1,13 +1,8 @@
 import { create } from "zustand";
-import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { db } from "../api/firebase";
-import { useStore } from "zustand";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../api/firebase";
-import { useNavigate } from "react-router-dom";
-import { getStorage, ref } from "../api/firebase";
-import { uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { addDoc, collection } from "firebase/firestore";
+import { getFirestore, doc, getDoc, updateDoc, deleteDoc, addDoc, collection } from "firebase/firestore";
+import { db, auth, storage } from "../api/firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { useRouter } from "next/router";
 
 const usePageStore = create((set) => ({
   newBooks: [],
@@ -24,11 +19,11 @@ const usePageStore = create((set) => ({
   chapters: new Map(),
   newChapter: null,
   description: null,
-  booksId: "",
-  booksHeading: "",
+  bookId: "",
+  bookHeading: "",
   currentIndex: "",
 
-  //   action
+  // Actions
   setCurrentIndex: (currentIndex) => set({ currentIndex }),
   setNewBooks: (newBooks) => set({ newBooks }),
   setNewBookName: (newBookName) => set({ newBookName }),
@@ -40,30 +35,30 @@ const usePageStore = create((set) => ({
   setEmail: (email) => set({ email }),
   setPassword: (password) => set({ password }),
   setError: (error) => set({ error }),
-  setShowPassword: (showPassword) => ({ showPassword }),
+  setShowPassword: (showPassword) => set({ showPassword }),
   setChapters: (chapters) => set({ chapters }),
   setNewChapter: (newChapter) => set({ newChapter }),
-  setDescription: (description) => set(description),
-  setBooksParams: (booksId, booksHeading) => set({ booksId, booksHeading }),
+  setDescription: (description) => set({ description }),
+  setBookParams: (bookId, bookHeading) => set({ bookId, bookHeading }),
 
-  fetchBookData: async (booksId) => {
-    if (!booksId) {
+  fetchBookData: async (bookId) => {
+    if (!bookId) {
       console.error("Book ID is undefined.");
       return;
     }
 
     try {
-      const bookRef = doc(db, "books", booksId);
+      const bookRef = doc(db, "books", bookId);
       const bookSnap = await getDoc(bookRef);
 
       if (bookSnap.exists()) {
         const bookData = bookSnap.data();
-        if (bookData && bookData.coverImg) {
+        if (bookData.coverImg) {
           set({ coverImageUrl: bookData.coverImg });
         } else {
           console.error("Cover image data not found in the book data.");
         }
-        if (bookData && bookData.chapters) {
+        if (bookData.chapters) {
           set({ chapters: new Map(Object.entries(bookData.chapters)) });
         } else {
           console.error("Chapters data not found in the book data.");
@@ -75,31 +70,31 @@ const usePageStore = create((set) => ({
       console.error("Error fetching book data:", error);
     }
   },
+
   handleAddBook: async () => {
     const { newBookName, coverImageFile, userName, user, setNewBooks, setNewBookName, setCoverImageFile } = usePageStore.getState();
 
     if (newBookName.trim() !== "" && coverImageFile) {
-      const storage = getStorage();
       const storageRef = ref(storage, `covers/${coverImageFile.name}`);
       await uploadBytes(storageRef, coverImageFile);
       const imageUrl = await getDownloadURL(storageRef);
 
-      const newBooks = {
+      const newBook = {
         heading: newBookName,
         coverImg: imageUrl,
         text: "Lorem",
-        deskripsi: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
         price: "",
         label: "",
         category: "",
-        pemilik: userName,
+        owner: userName,
         uid: user.uid,
       };
 
       try {
-        const docRef = await addDoc(collection(db, "books"), newBooks);
-        newBooks.id = docRef.id;
-        setNewBooks((prevBooks) => [...prevBooks, newBooks]);
+        const docRef = await addDoc(collection(db, "books"), newBook);
+        newBook.id = docRef.id;
+        setNewBooks((prevBooks) => [...prevBooks, newBook]);
         setNewBookName("");
         setCoverImageFile(null);
       } catch (e) {
@@ -107,7 +102,8 @@ const usePageStore = create((set) => ({
       }
     }
   },
-  handleChangeImage: async (e, booksId, closeImageBox) => {
+
+  handleChangeImage: async (e, bookId, closeImageBox) => {
     const file = e.target.files[0];
     const storageRef = ref(storage, `covers/${file.name}`);
 
@@ -118,8 +114,8 @@ const usePageStore = create((set) => ({
       const downloadURL = await getDownloadURL(storageRef);
       set({ coverImageUrl: downloadURL });
 
-      closeImageBox(); // You need to pass closeImageBox as a parameter
-      const bookRef = doc(db, "books", booksId);
+      closeImageBox(); // Ensure closeImageBox is passed as a parameter
+      const bookRef = doc(db, "books", bookId);
       await updateDoc(bookRef, {
         coverImg: downloadURL,
       });
@@ -128,19 +124,16 @@ const usePageStore = create((set) => ({
     }
   },
 
-  handleAccordionClicked: (chapterId, booksId, booksHeading, navigate) => {
-    navigate(`/project/${booksId}/${booksHeading}/${chapterId}`);
-  },
-
-  signOut: async (navigate) => {
+  signOut: async () => {
     try {
-      await auth.signOut(); // Melakukan logout dengan Firebase Authentication
+      await auth.signOut();
       console.log("Signed out successfully");
-      navigate("/login");
+      Router.push("/login");
     } catch (error) {
       console.error("Error signing out: ", error);
     }
   },
+
   handleDeleteBook: async (bookId) => {
     const { newBooks, setNewBooks } = usePageStore.getState();
 
@@ -152,4 +145,5 @@ const usePageStore = create((set) => ({
     }
   },
 }));
+
 export default usePageStore;

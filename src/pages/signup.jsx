@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { Box, useToast, Heading, FormControl, FormHelperText, Input, Flex, Button, Image, InputGroup, InputRightElement, InputLeftElement, IconButton, Link, Text } from "@chakra-ui/react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, googleProvider, setDoc, doc, db } from "@/services/api/firebase";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { IoMail } from "react-icons/io5";
 import { IoIosKey } from "react-icons/io";
-import NonLayout from "@/app/components/nonLayout";
+import NonLayout from "@/app/components/layouts/nonLayout";
 
 import { FaUser } from "react-icons/fa";
-import { displayName } from "react-quill";
 
 export default function Signup() {
   const toast = useToast();
   const router = useRouter();
+  const [name, setName] = useState(""); // Added state for name
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +27,7 @@ export default function Signup() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       await setDoc(doc(db, "users", user.uid), {
-        name: name,
+        name: name, // Using the name state in the document data
         email: user.email,
         uid: user.uid,
         createdAt: new Date(),
@@ -39,7 +39,7 @@ export default function Signup() {
         duration: 9000,
         isClosable: true,
       });
-      navigate("/");
+      router.push("/");
     } catch (error) {
       setError(error.message);
     }

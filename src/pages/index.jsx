@@ -6,9 +6,12 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, getDoc, doc, getDocs, db, collection, query, where } from "@/services/api/firebase";
 import { FcFullTrash } from "react-icons/fc";
 
+import { useRouter } from "next/router";
+
 export default function index() {
   const { handleDeleteBook, newBooks, newBookName, coverImageUrl, coverImageFile, user, userName, isLoading, setNewBooks, setNewBookName, setCoverImageFile, setCoverImageUrl, setUser, setUserName, setIsLoading } = usePageStore();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const router = useRouter();
 
   const handleInputChange = (e) => {
     setNewBookName(e.target.value);
@@ -89,7 +92,9 @@ export default function index() {
       }
     }
   };
-
+  const handleCardClicked = (booksId) => {
+    router.push(`/project/${booksId}`);
+  };
   return (
     <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
       <VStack bg="white" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
@@ -139,12 +144,15 @@ export default function index() {
                           <FcFullTrash />
                         </Button>
                       </Flex>
-                      <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id, item.heading)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
-                        <Image w="180px" h="250px" src={item.coverImg} alt={item.heading} objectFit="cover" />
+                      <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
+                        <Image w="180px" h="250px" src={item.coverImg} alt={item.heading} objectFit="cover" fetchpriority="eager" />
                       </Button>
                     </Box>
                     <Text fontWeight="600" fontSize="md" textAlign="center" m={4}>
                       {item.heading}
+                    </Text>
+                    <Text fontWeight="600" textAlign="center" m={4} fontSize="8px" color="teal">
+                      author : {item.pemilik}
                     </Text>
                   </CardBody>
                   <CardFooter gap={2}>
@@ -155,15 +163,6 @@ export default function index() {
                       {item.label}
                     </Tag>
                   </CardFooter>
-                  <Text fontSize="8px" color="teal">
-                    author : {item.pemilik}
-                  </Text>
-                  {/* <Text fontSize="8px" color="teal">
-                Last Modified : {item.updated_at}
-              </Text>
-              <Text fontSize="8px" color="teal">
-                Created : {item.created_at}
-              </Text> */}
                 </Card>
               ))
             ) : (

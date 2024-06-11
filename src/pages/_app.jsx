@@ -1,5 +1,5 @@
-import Layout from "@/app/components/layout";
-import NonLayout from "@/app/components/nonLayout";
+import Layout from "@/app/components/layouts/layout";
+import NonLayout from "@/app/components/layouts/nonLayout";
 import { ChakraProvider } from "@chakra-ui/react";
 
 export default function App({ Component, pageProps }) {

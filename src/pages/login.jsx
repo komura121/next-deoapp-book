@@ -6,7 +6,7 @@ import { auth, googleProvider, setDoc, doc, db } from "@/services/api/firebase";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { IoMail } from "react-icons/io5";
 import { IoIosKey } from "react-icons/io";
-import NonLayout from "@/app/components/nonLayout";
+import NonLayout from "@/app/components/layouts/nonLayout";
 
 export default function Login() {
   const toast = useToast();
