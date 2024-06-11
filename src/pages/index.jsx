@@ -3,10 +3,13 @@ import usePageStore from "../services/store/usePageStore";
 import { VStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button, Image, SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
 import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/services/api/firebase";
+import { auth, getDoc, doc, getDocs, db, collection, query, where } from "@/services/api/firebase";
+import { FcFullTrash } from "react-icons/fc";
 
 export default function index() {
   const { handleDeleteBook, newBooks, newBookName, coverImageUrl, coverImageFile, user, userName, isLoading, setNewBooks, setNewBookName, setCoverImageFile, setCoverImageUrl, setUser, setUserName, setIsLoading } = usePageStore();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const handleInputChange = (e) => {
     setNewBookName(e.target.value);
   };
@@ -86,8 +89,6 @@ export default function index() {
       }
     }
   };
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
