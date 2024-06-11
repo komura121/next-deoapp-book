@@ -6,11 +6,11 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBtummALVerDJ8QzNTxAk3xAyFTaGA_758",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_KEY,
   authDomain: "deopp-book.firebaseapp.com",
   projectId: "deopp-book",
   storageBucket: "deopp-book.appspot.com",
-  messagingSenderId: "347141491662",
+  messagingSenderId: process.env.NEXT_PUBLIC_SENDER_ID,
   appId: "1:347141491662:web:d5ad969a313f2dc93e399f",
 };
 
