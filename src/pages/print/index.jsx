@@ -71,21 +71,21 @@ export default function index() {
 
   return (
     <>
-      <Flex pl="6vw" mx={20} my={10} gap={10}>
-        <Box>
+      <Flex pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }} mx={20} my={10} gap={10}>
+        {/* <Box display={{ base: "block", xl: "flex" }}>
           <Input type="text" bg="white" borderStyle="solid" align="end" m={5} placeholder="Search" />
-        </Box>
-        <Box gap={10} w="full">
+        </Box> */}
+        <Box gap={10} minW="auto">
           {newBooks.length > 0 ? (
             newBooks.map((item, index) => (
-              <Card key={index} shadow="2xl" minW="90%" direction={{ base: "column", md: "row" }} objectFit="cover" borderWidth="1px" borderStyle="solid" my={5}>
-                <Box m={5}>
-                  <Button as={Box} maxW="200px" maxH="250px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
+              <Card key={index} shadow="2xl" maxW="100%" direction={{ base: "column", md: "row" }} objectFit="cover" borderWidth="1px" borderStyle="solid" my={5}>
+                <Box m={5} direction={{ base: "column", xl: "row" }}>
+                  <Button as={Box} align="center" maxW="200px" maxH="250px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
                     <Image width="180px" height="250px" src={item.coverImg} alt={item.heading} objectFit="cover" borderRadius={10} />
                   </Button>
                 </Box>
                 <Stack>
-                  <CardBody minW="900px" spacing={3}>
+                  <CardBody spacing={3}>
                     <Box>
                       <Text fontWeight="800" fontSize="lg" textTransform="capitalize">
                         {item.heading}
