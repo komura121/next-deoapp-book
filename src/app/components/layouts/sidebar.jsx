@@ -18,8 +18,8 @@ export default function Sidebar({ children }) {
   };
 
   const navItems = [
-    { icon: FcPrint, label: "Project", href: "/" },
-    { icon: FcPackage, label: "Print", href: "/print" },
+    { icon: FcPackage, label: "Project", href: "/" },
+    { icon: FcPrint, label: "Print", href: "/print" },
     { icon: FcAddDatabase, label: "Stock", href: "/stock" },
   ];
 

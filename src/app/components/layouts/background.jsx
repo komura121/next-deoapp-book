@@ -5,7 +5,7 @@ function Background() {
   return (
     <>
       <Box h="100vh" w="100vw" position="fixed" top="0" left="0" zIndex="-100" overflow="hidden">
-        <Image src="/blob.svg" alt="Background Image" layout="fill" objectFit="cover" quality={100} />
+        <Image src="/blob.png" alt="Background Image" layout="fill" objectFit="cover" quality={100} />
       </Box>
     </>
   );

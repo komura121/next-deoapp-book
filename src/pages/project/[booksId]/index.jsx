@@ -112,22 +112,17 @@ export default function Project() {
   // Generate AI
   const handleGenerate = async (e) => {
     e.preventDefault();
-    // Your generation logic here
   };
 
   const handleCardClicked = (booksHeading) => {
     router.push(`/project/${booksId}/${booksHeading}`);
   };
+  const handleBtnBackClicked = () => {
+    router.push("/");
+  };
 
   return (
     <div>
-      <Flex direction="column" pl={{ base: "18vw", md: "12vw", lg: "7vw" }} pos="fixed" py={3}>
-        <Box m={2}>
-          <Button variant="solid" colorScheme="green" onClick={() => router.push("/")}>
-            Back
-          </Button>
-        </Box>
-      </Flex>
       <Flex direction="column" pl={{ base: "18vw", md: "12vw", lg: "6vw" }}>
         <Flex direction={{ base: "column", lg: "row" }} pt="1.5" mx={{ base: "20%", md: "10%", lg: "10%" }} my={{ base: 4, md: 4 }} gap={4}>
           <Box>

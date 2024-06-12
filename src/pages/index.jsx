@@ -138,14 +138,14 @@ export default function index() {
     <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
       <VStack bg="white" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
         <Heading size="3xl" fontFamily="poppins">
-          <Image src="./BooksLogo.png" alt="Logo" width="100" height="100" maxH="350px" />
+          <Image src="./HeaderLogo.png" alt="Logo" width="500" height="500" maxH="350px" />
         </Heading>
         <Text align="center" mx="20%" fontSize="md">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum ex, ipsum accusantium molestiae deleniti natus voluptatum iusto, voluptatem tenetur, vero nam! Ipsa optio delectus ut illo aspernatur natus iure. Debitis. Sunt ab
           dolorem saepe, repellendus, soluta sapiente recusandae at, porro eveniet similique vitae nobis iusto repellat.
         </Text>
         <Box align={{ base: "center", lg: "end" }} mx="5%" my="2%">
-          <Button onClick={onOpen} colorScheme="red" height="50px">
+          <Button onClick={onOpen} colorScheme="yellow" height="50px">
             Create New Book
           </Button>
         </Box>
@@ -184,13 +184,13 @@ export default function index() {
                         </Button>
                       </Flex>
                       <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
-                        <Image width="180" height="250" src={item.coverImg} alt={item.heading} objectFit="cover" />
+                        <Image width="180px" height="250px" src={item.coverImg} alt={item.heading} objectFit="cover" />
                       </Button>
                     </Box>
                     <Text fontWeight="600" fontSize="md" textAlign="center" m={4}>
                       {item.heading}
                     </Text>
-                    <Text fontWeight="600" textAlign="center" m={4} fontSize="8px" color="teal">
+                    <Text fontWeight="600" textAlign="center" fontSize="8px" color="teal">
                       author : {item.pemilik}
                     </Text>
                   </CardBody>
@@ -202,6 +202,11 @@ export default function index() {
                       {item.label}
                     </Tag>
                   </CardFooter>
+                  <Box mb={4}>
+                    <Button colorScheme="yellow" onClick={() => handleCardClicked(item.id)}>
+                      Edit
+                    </Button>
+                  </Box>
                 </Card>
               ))
             ) : (

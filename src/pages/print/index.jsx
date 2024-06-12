@@ -1,4 +1,4 @@
-import { Flex, Box, CardFooter, Tag, Text, Input, Stack, CardBody, Card, Image, Button, useDisclosure } from "@chakra-ui/react";
+import { Flex, Box, HStack, CardFooter, VStack, Tag, Text, Input, Stack, CardBody, Card, Image, Button, useDisclosure } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/services/api/firebase";
@@ -20,7 +20,7 @@ export default function index() {
           throw new Error("Network response was not ok");
         }
         const data = await response.json();
-        setUserName(data.user.name); // Assuming "name" is the field in the user document
+        setUserName(data.user.name);
         setNewBooks(data.books);
       } catch (e) {
         console.error("Error fetching data: ", e);
@@ -40,9 +40,35 @@ export default function index() {
 
     return () => unsubscribe();
   }, []);
+
+  const handleDeleteBook = async (bookId) => {
+    try {
+      const response = await fetch("/api/books", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ bookId }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Network response was not ok: ${errorText}`);
+      }
+
+      setNewBooks(newBooks.filter((book) => book.id !== bookId));
+    } catch (e) {
+      console.error("Error deleting book:", e);
+    } finally {
+    }
+  };
   const handleCardClicked = (booksId) => {
     router.push(`/print/${booksId}`);
   };
+  const handleBtnEditClicked = (booksId) => {
+    router.push(`/project/${booksId}`);
+  };
+
   return (
     <>
       <Flex pl="6vw" mx={20} my={10} gap={10}>
@@ -59,7 +85,7 @@ export default function index() {
                   </Button>
                 </Box>
                 <Stack>
-                  <CardBody bgColor="pink" minW="50%">
+                  <CardBody minW="900px" spacing={3}>
                     <Box>
                       <Text fontWeight="800" fontSize="lg" textTransform="capitalize">
                         {item.heading}
@@ -71,26 +97,26 @@ export default function index() {
                     <Box>
                       <Text fontSize="md">Description : {item.deskripsi}</Text>
                     </Box>
-                    <Box>
+                    <HStack>
                       <Tag colorScheme="blue">{item.category}</Tag>
                       <Tag colorScheme="green">{item.label}</Tag>
+                    </HStack>
+                    <Box my={5}>
+                      <Tag colorScheme="yellow"> Status : {item.status}</Tag>
                     </Box>
                   </CardBody>
                 </Stack>
-                <Stack>
-                  <Button minW="100px" variant="link" size="md">
-                    <FcPrint />
+                <VStack gap={5} m={5} justify="center">
+                  <Button leftIcon={<FcPrint />} minW="200px" variant="outline" size="lg" onClick={() => handleCardClicked(item.id)}>
                     Print
                   </Button>
-                  <Button minW="100px" variant="link" size="md">
-                    <FcAddressBook />
+                  <Button leftIcon={<FcAddressBook />} minW="200px" variant="outline" size="lg" onClick={() => handleBtnEditClicked(item.id)}>
                     Edit
                   </Button>
-                  <Button minW="100px" variant="link" size="md">
-                    <FcFullTrash />
+                  <Button minW="200px" leftIcon={<FcFullTrash />} variant="outline" size="lg" onClick={() => handleDeleteBook(item.id)}>
                     Hapus
                   </Button>
-                </Stack>
+                </VStack>
               </Card>
             ))
           ) : (
