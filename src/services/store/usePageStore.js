@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { getFirestore, doc, getDoc, updateDoc, deleteDoc, addDoc, collection } from "firebase/firestore";
 import { db, auth, storage } from "../api/firebase";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { useRouter } from "next/router";
+import { useRouter, Router } from "next/router";
 
 const usePageStore = create((set) => ({
   newBooks: [],

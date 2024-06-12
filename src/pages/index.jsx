@@ -1,15 +1,17 @@
-import React, { useEffect } from "react";
-import usePageStore from "../services/store/usePageStore";
+import React, { useEffect, useState } from "react";
 import { VStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button, Image, SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
 import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, getDoc, doc, getDocs, db, collection, query, where } from "@/services/api/firebase";
+import { auth } from "@/services/api/firebase";
 import { FcFullTrash } from "react-icons/fc";
-
 import { useRouter } from "next/router";
-
 export default function index() {
-  const { handleDeleteBook, newBooks, newBookName, coverImageUrl, coverImageFile, user, userName, isLoading, setNewBooks, setNewBookName, setCoverImageFile, setCoverImageUrl, setUser, setUserName, setIsLoading } = usePageStore();
+  const [user, setUser] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [newBooks, setNewBooks] = useState([]);
+  const [newBookName, setNewBookName] = useState("");
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
 
@@ -23,75 +25,111 @@ export default function index() {
     }
   };
 
-  // Fetch user data and books
   useEffect(() => {
-    const fetchUserData = async (uid) => {
-      const userDoc = await getDoc(doc(db, "users", uid));
-      if (userDoc.exists()) {
-        setUserName(userDoc.data().name); // Assuming "name" is the field in the user document
+    const fetchUserDataAndBooks = async (uid) => {
+      try {
+        const response = await fetch(`/api/books?uid=${uid}`);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setUserName(data.user.name); // Assuming "name" is the field in the user document
+        setNewBooks(data.books);
+      } catch (e) {
+        console.error("Error fetching data: ", e);
       }
-    };
-
-    const fetchBooks = async (uid) => {
-      const booksCollection = collection(db, "books");
-      const q = query(booksCollection, where("uid", "==", uid));
-      const booksSnapshot = await getDocs(q);
-      const booksList = booksSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setNewBooks(booksList);
     };
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        fetchUserData(currentUser.uid);
-        fetchBooks(currentUser.uid);
+        fetchUserDataAndBooks(currentUser.uid);
       } else {
         setUser(null);
+        setUserName("");
         setNewBooks([]);
       }
     });
 
     return () => unsubscribe();
   }, []);
-
-  // Add Data
   const handleAddBook = async () => {
     if (newBookName.trim() !== "" && coverImageFile) {
-      const storage = getStorage();
-      const storageRef = ref(storage, `covers/${coverImageFile.name}`);
-      await uploadBytes(storageRef, coverImageFile);
-      const imageUrl = await getDownloadURL(storageRef);
+      setIsLoading(true); // Set loading state
 
-      const newBook = {
-        heading: newBookName,
-        coverImg: imageUrl,
-        text: "Lorem",
-        deskripsi: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        price: "",
-        label: "",
-        category: "",
-        status: "on Proses",
-        pemilik: userName,
-        uid: user.uid,
-      };
+      // Convert file to base64
+      const toBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
 
       try {
-        const docRef = await addDoc(collection(db, "books"), newBook);
-        newBook.id = docRef.id;
+        const base64Image = await toBase64(coverImageFile);
+
+        const formData = {
+          newBookName,
+          coverImageFile: {
+            name: coverImageFile.name,
+            data: base64Image.split(",")[1], // Remove the base64 prefix
+          },
+          userName,
+          user: JSON.stringify(user),
+        };
+
+        const response = await fetch("/api/books", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Network response was not ok: ${errorText}`);
+        }
+
+        const newBook = await response.json();
         setNewBooks([...newBooks, newBook]);
         setNewBookName("");
         setCoverImageFile(null);
         onClose();
-        setIsLoading(false);
       } catch (e) {
-        console.error("Error adding document: ", e);
+        console.error("Error adding book:", e);
+      } finally {
         setIsLoading(false);
       }
     }
   };
+
+  const handleDeleteBook = async (bookId) => {
+    setIsLoading(true); // Set loading state
+
+    try {
+      const response = await fetch("/api/books", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ bookId }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Network response was not ok: ${errorText}`);
+      }
+
+      setNewBooks(newBooks.filter((book) => book.id !== bookId));
+    } catch (e) {
+      console.error("Error deleting book:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCardClicked = (booksId) => {
     router.push(`/project/${booksId}`);
   };
@@ -145,7 +183,7 @@ export default function index() {
                         </Button>
                       </Flex>
                       <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
-                        <Image w="180px" h="250px" src={item.coverImg} alt={item.heading} objectFit="cover" fetchpriority="eager" />
+                        <Image w="180px" h="250px" src={item.coverImg} alt={item.heading} objectFit="cover" />
                       </Button>
                     </Box>
                     <Text fontWeight="600" fontSize="md" textAlign="center" m={4}>
@@ -188,7 +226,7 @@ export default function index() {
 
           <ModalFooter>
             {isLoading ? (
-              <Image src={spinner} alt="Loading" />
+              <div></div>
             ) : (
               <Button colorScheme="red" mr={3} onClick={handleAddBook}>
                 Create Project

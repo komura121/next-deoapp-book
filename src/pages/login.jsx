@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { Box, Flex, FormControl, useToast, Image, Input, Button, InputGroup, InputRightElement, InputLeftAddon, IconButton, Link, ButtonGroup, Text } from "@chakra-ui/react";
+import { Box, Flex, FormControl, Image, Input, Button, InputGroup, InputRightElement, InputLeftAddon, IconButton, Link, ButtonGroup, Text } from "@chakra-ui/react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { useToast } from "@chakra-ui/react";
 import { auth, googleProvider, setDoc, doc, db } from "@/services/api/firebase";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { IoMail } from "react-icons/io5";

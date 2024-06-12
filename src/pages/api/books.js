@@ -1,61 +1,73 @@
-import {db} from "@/services/api/firebase"
-import {collection, getDocs, addDoc, doc, getDoc, where, query} from "firebase/firestore"
-import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage'
+import { db } from "../../services/api/firebase";
+import { getDoc, doc, collection, query, where, getDocs, addDoc, deleteDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export const config = {
-    api: {
-
-        bodyParser: true,
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // Set limit to handle large file uploads
     },
-}
-
-const handler = async (req,res) => {
-    const{method, query: {uid}, body} = req;
-
-    try{
-        switch(method) {
-            case 'GET' :
-                return await handleGetBooks(req,res, uid);
-            case 'POST':
-                return await handleAddBook(req,res,body);
-            default :
-            res.setHeader('Allow', ['GET','POST']);
-            return res.status(405).end(`method lu salah pilih`);
-            
-        }
-
-    }catch (error) {
-        console.error('error bang :', error);
-        return res.status(500).json({error: "yang kenak servernya bang"});
-    }
+  },
 };
 
-const handleAddbook = async (req, res, body) => {
-    const {newBookName, coverImageFile, userName, user} = body;
+const handler = async (req, res) => {
+  const {
+    method,
+    query: { uid },
+    body,
+  } = req;
 
-    if (!newBookname?. trim() || !coverImageFile || !userName || !user?.uid) {
-        return res.status(400).json({error: 'data gajelas bang'});
+  try {
+    if (method === "GET") {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      const userData = userDoc.exists() ? userDoc.data() : null;
+
+      const booksSnapshot = await getDocs(query(collection(db, "books"), where("uid", "==", uid)));
+      const booksList = booksSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      return res.status(200).json({ user: userData, books: booksList });
     }
-    const storage = getStorage();
-    const storageRef = ref(storage, `covers/${coverImageFile.name}`);
-    await uploadBytes(storageRef, buffer.from (coverImageFile.data, base64));
-    const imageUrl = await getDownloadURL(storageRef)
 
-    const newBook = {
-        bookTitle: newBookName,
+    if (method === "POST") {
+      const { newBookName, coverImageFile, userName, user } = body;
+      if (!newBookName.trim() || !coverImageFile) return res.status(400).json({ error: "Invalid data" });
+
+      const storageRef = ref(getStorage(), `covers/${coverImageFile.name}`);
+      const imageBuffer = Buffer.from(coverImageFile.data, "base64");
+      await uploadBytes(storageRef, imageBuffer);
+      const imageUrl = await getDownloadURL(storageRef);
+
+      const newBook = {
+        heading: newBookName,
         coverImg: imageUrl,
         text: "Lorem",
-        description: "",
-        price: "Rp.",
-        label:"",
-        category:'',
-        status: 'on Proses',
-        author: userName,
-        uid: user.uid,
+        deskripsi: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+        price: "",
+        label: "",
+        category: "",
+        status: "on Proses",
+        pemilik: userName,
+        uid: JSON.parse(user).uid,
+      };
+
+      const docRef = await addDoc(collection(db, "books"), newBook);
+      return res.status(201).json({ id: docRef.id, ...newBook });
     }
 
-    const docRef = await addDoc(collection(db, 'books'), newBook);
-    return res.status(201).json({id:docRef.id, ...newBook});
+    if (method === "DELETE") {
+      const { bookId } = body;
+      if (!bookId) return res.status(400).json({ error: "Invalid data" });
+
+      await deleteDoc(doc(db, "books", bookId));
+      return res.status(200).json({ success: true });
+    }
+
+    res.setHeader("Allow", ["GET", "POST", "DELETE"]);
+    res.status(405).end(`Method ${method} Not Allowed`);
+  } catch (error) {
+    console.error("Error handling request:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 export default handler;

@@ -1,11 +1,11 @@
-import { Box, Center, Flex, VStack, Icon, Text, Link, Image } from "@chakra-ui/next-js";
+import { Box, Center, Flex, VStack, Icon, Text, Link, Image } from "@chakra-ui/react";
 import { FcAddDatabase, FcPrint, FcPackage, FcGoodDecision, FcSettings } from "react-icons/fc";
 
 export default function RootLayout({ children }) {
   const navItems = [
     { icon: FcPrint, label: "Project", href: "/" },
-    { icon: FcPackage, label: "Print", href: "/Print" },
-    { icon: FcAddDatabase, label: "Stock", href: "/Stock" },
+    { icon: FcPackage, label: "Print", href: "/print" },
+    { icon: FcAddDatabase, label: "Stock", href: "/stock" },
   ];
 
   const bottomNavItems = [
