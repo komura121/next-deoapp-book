@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { VStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button,  SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
-import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
+import { VStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button, SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
+import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Image } from "@chakra-ui/react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/services/api/firebase";
 import { FcFullTrash } from "react-icons/fc";
 import { useRouter } from "next/router";
-import ImageWithFetchPriority from "../app/components/ui/ImageWithFetchPriority";
 
 export default function index() {
   const [user, setUser] = useState(null);
@@ -139,7 +138,7 @@ export default function index() {
     <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
       <VStack bg="white" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
         <Heading size="3xl" fontFamily="poppins">
-          <ImageWithFetchPriority src="./BooksLogo.png" alt="Logo" width="100" height="100"  maxH="350px" />
+          <Image src="./BooksLogo.png" alt="Logo" width="100" height="100" maxH="350px" />
         </Heading>
         <Text align="center" mx="20%" fontSize="md">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum ex, ipsum accusantium molestiae deleniti natus voluptatum iusto, voluptatem tenetur, vero nam! Ipsa optio delectus ut illo aspernatur natus iure. Debitis. Sunt ab
@@ -185,7 +184,7 @@ export default function index() {
                         </Button>
                       </Flex>
                       <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
-                        <ImageWithFetchPriority w="180px" h="250px" src={item.coverImg} alt={item.heading} objectFit="cover" />
+                        <Image width="180" height="250" src={item.coverImg} alt={item.heading} objectFit="cover" />
                       </Button>
                     </Box>
                     <Text fontWeight="600" fontSize="md" textAlign="center" m={4}>
