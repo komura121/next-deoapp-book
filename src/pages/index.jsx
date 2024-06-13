@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { VStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button, SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
+import { VStack, HStack, Flex, Box, Card, CardHeader, CardBody, CardFooter, Text, Heading, Button, SimpleGrid, Input, InputGroup, Tag } from "@chakra-ui/react";
 import { useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Image } from "@chakra-ui/react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/services/api/firebase";
@@ -136,15 +136,20 @@ export default function index() {
   };
   return (
     <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
-      <VStack bg="white" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
+      <VStack bgImage="./fixa.gif" bgRepeat="no-repeat" bgColor="white" objectFit="contain" bgPos="center" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
         <Heading size="3xl" fontFamily="poppins">
-          <Image src="./HeaderLogo.png" alt="Logo" width="500" height="500" maxH="350px" />
+          <Image src="./HeaderLogo.png" alt="Logo" width="200" height="100" maxH="350px" />
         </Heading>
-        <Text align="center" mx="20%" fontSize="md">
+
+        <Heading align={{ base: "center", lg: "left" }} ml="5%" mr={{ base: "5%", lg: "40%" }}>
+          Write a Book with AI Assistant.
+        </Heading>
+        <Text align="center" ml="5%" mr={{ base: "5%", lg: "40%" }} fontSize="lg" fontWeight="600">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum ex, ipsum accusantium molestiae deleniti natus voluptatum iusto, voluptatem tenetur, vero nam! Ipsa optio delectus ut illo aspernatur natus iure. Debitis. Sunt ab
           dolorem saepe, repellendus, soluta sapiente recusandae at, porro eveniet similique vitae nobis iusto repellat.
         </Text>
-        <Box align={{ base: "center", lg: "end" }} mx="5%" my="2%">
+
+        <Box align={{ base: "center", lg: "end" }} mx="10%" my="2%">
           <Button onClick={onOpen} colorScheme="yellow" height="50px">
             Create New Book
           </Button>
@@ -160,7 +165,7 @@ export default function index() {
               <CardHeader></CardHeader>
               <CardBody>
                 <Box>
-                  <Button onClick={onOpen} minW="180px" minH="250px">
+                  <Button bgColor="#DBE0DF" onClick={onOpen} minW="180px" minH="250px" borderRadius={10}>
                     +
                   </Button>
                 </Box>
@@ -168,10 +173,6 @@ export default function index() {
                   New Project
                 </Text>
               </CardBody>
-              <CardFooter gap={2}>
-                <Tag colorScheme="blue" size="sm"></Tag>
-                <Tag colorScheme="red" size="sm"></Tag>
-              </CardFooter>
             </Card>
             {newBooks.length > 0 ? (
               newBooks.map((item, index) => (
@@ -183,8 +184,8 @@ export default function index() {
                           <FcFullTrash />
                         </Button>
                       </Flex>
-                      <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }}>
-                        <Image width="180px" height="250px" src={item.coverImg} alt={item.heading} objectFit="cover" />
+                      <Button as={Box} maxW="200px" maxH="350px" variant="unstyled" onClick={() => handleCardClicked(item.id)} cursor="pointer" _hover={{ boxShadow: "2xl", color: "black" }} borderRadius={10}>
+                        <Image width="180px" height="250px" src={item.coverImg} alt={item.heading} objectFit="cover" borderRadius={10} />
                       </Button>
                     </Box>
                     <Text fontWeight="600" fontSize="md" textAlign="center" m={4}>

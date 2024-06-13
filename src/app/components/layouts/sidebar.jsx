@@ -10,12 +10,24 @@ import { auth } from "@/services/api/firebase";
 
 export default function Sidebar({ children }) {
   const { signOut } = usePageStore();
-  const router = useRouter(); // Use Next.js router
+  const router = useRouter();
 
   const handleLogout = () => {
     signOut();
-    router.push("/login"); // Use router to navigate
+    router.push("/login");
   };
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("uid", user.uid);
+      } else {
+        console.log("user is logged out");
+        router.push("/login");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const navItems = [
     { icon: FcPackage, label: "Project", href: "/" },

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import usePageStore from "@/services/store/usePageStore";
+import axios from "axios";
 import {
   Box,
   Flex,
@@ -9,11 +10,6 @@ import {
   Image,
   Button,
   IconButton,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
   FormControl,
   FormHelperText,
   Textarea,
@@ -28,25 +24,34 @@ import {
   ModalBody,
   ModalCloseButton,
   Spinner,
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
 } from "@chakra-ui/react";
 import { FcEditImage } from "react-icons/fc";
 import { GiChaingun } from "react-icons/gi";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, doc, storage } from "@/services/api/firebase";
-import { getFirestore, getDoc, updateDoc } from "firebase/firestore";
+import { getDoc, updateDoc } from "firebase/firestore";
 
 export default function Project() {
   const router = useRouter();
-  const { booksId } = router.query;
+  const { booksId, booksHeading } = router.query;
   const { fetchBookData, handleAccordionClicked, chapters, newChapter, description, coverImageUrl, setChapters, setNewChapters, setDescription, setCoverImageUrl } = usePageStore();
   const { isOpen: isImageBoxVisible, onOpen: openImageBox, onClose: closeImageBox } = useDisclosure();
   const { isOpen: isSpinnerVisible, onOpen: openSpinnerBox, onClose: closeSpinnerBox } = useDisclosure();
-
-  // fetch Data
+  const [bookTitle, setBookTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewGeneratedText, setPreviewGeneratedText] = useState(null);
+  const [bookData, setBookData] = useState(null); // Define bookData state
+  // Ensure chapters is initialized as an array
   useEffect(() => {
-    fetchBookData(booksId);
-  }, [booksId, fetchBookData]);
+    setChapters([]);
+  }, [setChapters]);
 
+  // Fetch Data
   useEffect(() => {
     const fetchBookData = async () => {
       if (!booksId) {
@@ -59,19 +64,16 @@ export default function Project() {
         const bookSnap = await getDoc(bookRef);
 
         if (bookSnap.exists()) {
-          const bookData = bookSnap.data();
-          if (bookData && bookData.coverImg) {
-            setCoverImageUrl(bookData.coverImg);
+          const data = bookSnap.data();
+          setBookTitle(data.title || "");
+          if (data.coverImg) {
+            setCoverImageUrl(data.coverImg);
           } else {
             console.error("Cover image data not found in the book data.");
           }
-          if (bookData && bookData.chapters) {
-            // Convert chapters object to an array
-            const chaptersArray = Object.values(bookData.chapters);
-            setChapters(chaptersArray);
-          } else {
-            console.error("Chapters data not found in the book data.");
-          }
+
+          setChapters(data.chapters || []);
+          setBookData(data); // Set bookData state here
         } else {
           console.error("Book document does not exist.");
         }
@@ -81,8 +83,9 @@ export default function Project() {
     };
 
     fetchBookData();
-  }, [booksId]);
-  // change Images
+  }, [booksId, setCoverImageUrl, setChapters]);
+
+  // Change Images
   const handleChangeImage = async (e) => {
     const file = e.target.files[0];
     const storageRef = ref(storage, `covers/${file.name}`);
@@ -110,15 +113,139 @@ export default function Project() {
   };
 
   // Generate AI
-  const handleGenerate = async (e) => {
-    e.preventDefault();
+  const generateAI = async () => {
+    setIsLoading(true); // Set isLoading true before sending the request
+
+    try {
+      const response = await axios.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          model: "llama3-8b-8192",
+          messages: [
+            { role: "system", content: "You are a book writer. Generate a minimum of 5 chapter titles and a maximum of 5 subchapter titles." },
+            {
+              role: "user",
+              content: `Generate chapter titles and subchapter titles based on the book title "${booksHeading}" or description: "${description}". Provide the response in the following JSON format:
+      
+          {
+            "chapters": [
+              {
+                "title": "Chapter 1 Title",
+                "content": "Chapter 1 Content",
+                "subchapters": [
+                  {
+                    "title": "Subchapter 1 Title",
+                    "content": "Subchapter 1 Content"
+                  },
+                  {
+                    "title": "Subchapter 2 Title",
+                    "content": "Subchapter 2 Content"
+                  }
+                ]
+              },
+              {
+                "title": "Chapter 2 Title",
+                "content": "Chapter 2 Content",
+                "subchapters": [
+                  {
+                    "title": "Subchapter 1 Title",
+                    "content": "Subchapter 1 Content"
+                  },
+                  {
+                    "title": "Subchapter 2 Title",
+                    "content": "Subchapter 2 Content"
+                  }
+                ]
+              }
+            ]
+          }`,
+            },
+          ],
+          max_tokens: 1000,
+        },
+        {
+          headers: {
+            Authorization: "Bearer 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", // Replace with your actual API key
+          },
+        }
+      );
+
+      // Get the generated data
+      let generatedData = response.data.choices[0].message.content.trim();
+
+      // Strip any non-JSON text
+      const jsonStartIndex = generatedData.indexOf("{");
+      const jsonEndIndex = generatedData.lastIndexOf("}");
+      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+        generatedData = generatedData.slice(jsonStartIndex, jsonEndIndex + 1);
+      } else {
+        throw new Error("JSON data not found in response");
+      }
+
+      // Validate if the response is a valid JSON
+      let parsedData;
+      try {
+        parsedData = JSON.parse(generatedData);
+      } catch (error) {
+        console.error("Failed to parse generated data as JSON:", error);
+        throw new Error("Invalid JSON format");
+      }
+
+      // Update state with the generated text
+      setPreviewGeneratedText(parsedData); // Set previewGeneratedText instead of generatedText
+
+      return parsedData; // Return the generated data for use in handleGenerate
+    } catch (error) {
+      console.error("Error generating text:", error);
+      return null;
+    } finally {
+      setIsLoading(false); // Set isLoading false after the request is complete
+    }
   };
 
-  const handleCardClicked = (booksHeading) => {
-    router.push(`/project/${booksId}/${booksHeading}`);
-  };
-  const handleBtnBackClicked = () => {
-    router.push("/");
+  const handleGenerate = async (e) => {
+    e.preventDefault();
+    try {
+      const generatedData = await generateAI();
+
+      if (!generatedData || !Array.isArray(generatedData.chapters)) {
+        console.error("Invalid response:", generatedData);
+        return;
+      }
+
+      const newChapters = generatedData.chapters.map((chapter, index) => ({
+        chapId: `chapter_${index + 1}`,
+        title: chapter.title,
+        content: chapter.content,
+        subchapters: chapter.subchapters.map((subchapter, subIndex) => ({
+          subId: `subchapter_${index + 1}_${subIndex + 1}`,
+          title: subchapter.title,
+          content: subchapter.content,
+        })),
+      }));
+
+      // Save the new data to Firebase
+      const bookRef = doc(db, "books", booksId);
+      await updateDoc(bookRef, {
+        chapters: newChapters,
+      });
+
+      // Update state chapters
+      setChapters(newChapters);
+
+      // Get the updated book data from Firebase
+      const updatedBookSnap = await getDoc(bookRef);
+      if (updatedBookSnap.exists()) {
+        const updatedData = updatedBookSnap.data();
+        setBookData(updatedData);
+      } else {
+        console.error("Updated book data not found in Firebase.");
+      }
+
+      console.log("Data successfully saved to Firebase.");
+    } catch (error) {
+      console.error("Error generating chapters:", error);
+    }
   };
 
   return (
@@ -128,7 +255,7 @@ export default function Project() {
           <Box>
             <Box minW="300px" textAlign="center" p={{ base: "3%", lg: "5%" }} bg="white" borderRadius="lg">
               <Text p="2%">Cover Book</Text>
-              <Image src={coverImageUrl} alt="Cover Image" minH={{ base: "180px", sm: "230px", md: "250px", lg: "300px" }} maxW={{ base: "130px", sm: "180px", md: "200px", lg: "200px" }} mx="auto" objectFit="cover" />
+              <Image src={coverImageUrl} alt="Cover Image" minH={{ base: "180px", sm: "230px", md: "250px", lg: "300px" }} maxW={{ base: "130px", sm: "180px", md: "200px", lg: "200px" }} mx="auto" objectFit="cover" borderRadius={10} />
               <Flex justify="center" my={4} direction={{ base: "column", xl: "row" }}>
                 <ButtonGroup justifyContent="center" p={5}>
                   <Button onClick={openImageBox} leftIcon={<FcEditImage size="25px" />} colorScheme="blue" variant="solid" size="md">
@@ -143,60 +270,79 @@ export default function Project() {
           <Flex w="full" direction="column">
             <Box flex="1" bg="white" borderRadius="lg" px="5%" w="full">
               <Heading as="h2" size="md" my={5} fontWeight="600">
-                Title Books
+                {booksHeading}
               </Heading>
-              {/* Accordion  */}
-              {chapters.length === 0 ? (
+              {Array.isArray(chapters) && chapters.length === 0 ? (
                 <Text>Generate Your Chapters</Text>
               ) : (
                 <Accordion defaultIndex={[0]} allowMultiple w="full">
-                  <AccordionItem key={chapters.chapId}>
-                    <h2>
-                      <AccordionButton>
-                        <Box flex="1" textAlign="left">
-                          <Text fontWeight="bold">{chapters.title}</Text>
-                        </Box>
-                        <AccordionIcon />
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4} maxW="70%">
-                      {chapters.subchapters &&
-                        Array.isArray(chapters.subchapters) &&
-                        chapters.subchapters.map((subchapter) => (
-                          <Box key={subchapter.subId}>
-                            <Button variant="ghost" fontWeight="400" onClick={() => handleCardClicked(chapters.id)}>
-                              {subchapter.title}
-                            </Button>
-                          </Box>
-                        ))}
-                    </AccordionPanel>
-                  </AccordionItem>
+                  {Array.isArray(chapters) &&
+                    chapters.map((chapter) => (
+                      <AccordionItem key={chapter.chapId}>
+                        <h2>
+                          <AccordionButton>
+                            <Box flex="1" textAlign="left">
+                              <Text fontWeight="bold">{chapter.title}</Text>
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel pb={4} maxW="70%">
+                          {chapter.subchapters &&
+                            Array.isArray(chapter.subchapters) &&
+                            chapter.subchapters.map((subchapter) => (
+                              <Box key={subchapter.subId}>
+                                <Button variant="ghost" fontWeight="400" onClick={() => handleCardClicked(subchapter.id)}>
+                                  {subchapter.title}
+                                </Button>
+                              </Box>
+                            ))}
+                        </AccordionPanel>
+                      </AccordionItem>
+                    ))}
                 </Accordion>
               )}
             </Box>
             <Box>{/* <Text>{result}</Text> */}</Box>
           </Flex>
         </Flex>
-
-        <Flex direction="column" px={{ base: "20%", md: "8%", lg: "8%" }}>
-          <Box px="2%" py="2%" mx="2%" mb="5%" bg="white" borderRadius="xl">
-            <Box align="end">
-              <ButtonGroup size="md" isAttached variant="outline">
-                <Button w={{ base: "100%", md: "auto" }} color="white" bgColor="blueviolet" onClick={handleGenerate}>
-                  Generate
-                </Button>
-                <IconButton bg="white" aria-label="Generate" icon={<GiChaingun />} size="md" />
-              </ButtonGroup>
-            </Box>
+        <Flex w="full" direction="column">
+          <Box flex="1" borderRadius="lg" px="5%" w="full">
+            <Heading as="h2" size="md" my={5} fontWeight="600">
+              {bookTitle}
+            </Heading>
             <Box>
-              <Text>Description :</Text>
-              <FormControl>
-                <Textarea placeholder="Your Description" h={{ base: "180px", md: "200px" }} onChange={(e) => setDescription(e.target.value)} />
-                <FormHelperText>Describe Your Books</FormHelperText>
-              </FormControl>
+              {bookData &&
+                bookData.chapters &&
+                Object.keys(bookData.chapters).map((key) => (
+                  <Button key={key} onClick={() => handleCardClicked(bookData.chapters[key].heading)}>
+                    {bookData.chapters[key].heading}
+                  </Button>
+                ))}
             </Box>
           </Box>
+          <Box>{/* <Text>{result}</Text> */}</Box>
         </Flex>
+      </Flex>
+
+      <Flex direction="column" px={{ base: "20%", md: "8%", lg: "8%" }}>
+        <Box px="2%" py="2%" mx="2%" mb="5%" bg="white" borderRadius="xl">
+          <Box align="end">
+            <ButtonGroup size="md" isAttached variant="solid" borderWidth={1} borderRadius={8}>
+              <Button w={{ base: "100%", md: "auto" }} colorScheme="yellow" onClick={handleGenerate}>
+                Generate
+              </Button>
+              <IconButton bg="white" aria-label="Generate" icon={<GiChaingun />} size="md" />
+            </ButtonGroup>
+          </Box>
+          <Box>
+            <Text>Description :</Text>
+            <FormControl>
+              <Textarea placeholder="Your Description" h={{ base: "180px", md: "200px" }} onChange={(e) => setDescription(e.target.value)} />
+              <FormHelperText>Describe Your Books</FormHelperText>
+            </FormControl>
+          </Box>
+        </Box>
       </Flex>
 
       {/* modal image Change */}
