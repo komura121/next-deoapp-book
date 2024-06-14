@@ -8,7 +8,7 @@ function index() {
   const { isOpen, onOpen, onClose } = useDisclosure;
   return (
     <Flex direction="column" pl={{ base: "18vw", md: "12vw", lg: "6vw" }}>
-      <Flex bg="white" mx={10} borderRadius={20} h="auto" m={10}>
+      <Flex bg="white" mx="9vw" borderRadius={20} h="auto" my={10}>
         <Box p={10} display={{ base: "none", xl: "flex" }}>
           <AccordionChapters />
         </Box>

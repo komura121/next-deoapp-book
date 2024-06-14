@@ -1,5 +1,5 @@
 import Sidebar from "./sidebar";
-import Footer from "./footbar";
+import BackButton from "../ui/backButton";
 import Background from "./background";
 import { Box } from "@chakra-ui/react";
 
@@ -7,8 +7,10 @@ export default function Layout({ children }) {
   return (
     <>
       <Sidebar />
-      <Box>{children}</Box>
-
+      <Box>
+        <BackButton />
+        {children}
+      </Box>
       <Background />
     </>
   );

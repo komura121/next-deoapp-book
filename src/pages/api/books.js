@@ -29,7 +29,7 @@ const handler = async (req, res) => {
     }
 
     if (method === "POST") {
-      const { newBookName, coverImageFile, userName, user } = body;
+      const { newBookName, coverImageFile, userName, topicBook, user } = body;
       if (!newBookName.trim() || !coverImageFile) return res.status(400).json({ error: "Invalid data" });
 
       const storageRef = ref(getStorage(), `covers/${coverImageFile.name}`);
@@ -46,6 +46,7 @@ const handler = async (req, res) => {
         label: "",
         category: "",
         status: "on Proses",
+        topic: topicBook,
         pemilik: userName,
         uid: JSON.parse(user).uid,
       };

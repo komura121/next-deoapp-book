@@ -13,11 +13,15 @@ export default function index() {
   const [newBookName, setNewBookName] = useState("");
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [topicBook, setTopicBook] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
 
-  const handleInputChange = (e) => {
+  const handleNameChange = (e) => {
     setNewBookName(e.target.value);
+  };
+  const handleTopicChange = (e) => {
+    setTopicBook(e.target.value);
   };
 
   const handleImageChange = (e) => {
@@ -77,6 +81,7 @@ export default function index() {
             data: base64Image.split(",")[1], // Remove the base64 prefix
           },
           userName,
+          topicBook,
           user: JSON.stringify(user),
         };
 
@@ -97,6 +102,7 @@ export default function index() {
         setNewBooks([...newBooks, newBook]);
         setNewBookName("");
         setCoverImageFile(null);
+        setTopicBook("");
         onClose();
       } catch (e) {
         console.error("Error adding book:", e);
@@ -159,11 +165,11 @@ export default function index() {
       </HStack>
 
       <Flex direction="column" justify="center">
-        <Box maxH="100%" pt={10} pb={20} px={{ base: "20%", md: "20%", lg: "10%" }} borderRadius={20}>
+        <Box maxH="100%" pt={10} pb={20} px={{ base: "20%", md: "20%", lg: "15%" }} borderRadius={20} w="full">
           <Heading py={6} textAlign="center" size="lg">
             Your Project
           </Heading>
-          <SimpleGrid templateColumns="repeat(auto-fit, minmax(250px, 0.2fr))" gap={4}>
+          <SimpleGrid templateColumns="repeat(auto-fit, minmax(250px, 0.2fr))" gap={6}>
             <Card align="center" shadow="2xl" maxW="250px" bgColor="white">
               <CardHeader></CardHeader>
               <CardBody>
@@ -205,6 +211,9 @@ export default function index() {
                     <Tag colorScheme="green" size="sm">
                       {item.label}
                     </Tag>
+                    <Tag colorScheme="green" size="sm">
+                      {item.topic}
+                    </Tag>
                   </CardFooter>
                   <Box mb={4}>
                     <Button colorScheme="yellow" onClick={() => handleCardClicked(item.id)}>
@@ -227,8 +236,9 @@ export default function index() {
           <ModalHeader>New Project</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <InputGroup>
-              <Input value={newBookName} onChange={handleInputChange} placeholder="Your Project Name"></Input>
+            <InputGroup gap={2}>
+              <Input value={newBookName} onChange={handleNameChange} placeholder="Your Project Name" />
+              <Input value={topicBook} onChange={handleTopicChange} placeholder="Your Book Topic" />
             </InputGroup>
             <Text mt={4}>Upload Cover Image</Text>
             <Input type="file" onChange={handleImageChange} alignContent="center" />

@@ -46,12 +46,10 @@ export default function Project() {
   const [bookTitle, setBookTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [previewGeneratedText, setPreviewGeneratedText] = useState(null);
-  const [bookData, setBookData] = useState(null); // Define bookData state
+  const [bookData, setBookData] = useState(null);
+  const [bookTopic, setBookTopic] = useState("");
+  // Define bookData state
   // Ensure chapters is initialized as an array
-  useEffect(() => {
-    setChapters([]);
-  }, [setChapters]);
-
   // Fetch Data
   useEffect(() => {
     const fetchBookData = async () => {
@@ -72,7 +70,7 @@ export default function Project() {
           } else {
             console.error("Cover image data not found in the book data.");
           }
-          setChapters(data.chapters || []);
+
           setBookData(data); // Set bookData state here
         } else {
           console.error("Book document does not exist.");
@@ -83,7 +81,7 @@ export default function Project() {
     };
 
     fetchBookData();
-  }, [booksId, setCoverImageUrl, setChapters]);
+  }, [booksId, setCoverImageUrl]);
 
   // Change Images
   const handleChangeImage = async (e) => {
@@ -113,153 +111,161 @@ export default function Project() {
   };
 
   // Generate AI
-  const generateAI = async () => {
-    setIsLoading(true); // Set isLoading true before sending the request
+  // const generateAI = async () => {
+  //   setIsLoading(true); // Set isLoading true before sending the request
 
-    try {
-      const response = await axios.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          model: "llama3-8b-8192",
-          messages: [
-            { role: "system", content: "You are a book writer. Generate a minimum of 5 chapter titles and a maximum of 5 subchapter titles." },
-            {
-              role: "user",
-              content: `Generate chapter titles and subchapter titles based on the book title "${booksHeading}" or description: "${description}". Provide the response in the following JSON format:
-      
-          {
-            "chapters": [
-              {
-                "title": "Chapter 1 Title",
-                "content": "Chapter 1 Content",
-                "subchapters": [
-                  {
-                    "title": "Subchapter 1 Title",
-                    "content": "Subchapter 1 Content"
-                  },
-                  {
-                    "title": "Subchapter 2 Title",
-                    "content": "Subchapter 2 Content"
-                  }
-                ]
-              },
-              {
-                "title": "Chapter 2 Title",
-                "content": "Chapter 2 Content",
-                "subchapters": [
-                  {
-                    "title": "Subchapter 1 Title",
-                    "content": "Subchapter 1 Content"
-                  },
-                  {
-                    "title": "Subchapter 2 Title",
-                    "content": "Subchapter 2 Content"
-                  }
-                ]
-              }
-            ]
-          }`,
-            },
-          ],
-          max_tokens: 1000,
-        },
-        {
-          headers: {
-            Authorization: "Bearer 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", // Replace with your actual API key
-          },
-        }
-      );
+  //   try {
+  //     const response = await axios.post(
+  //       "https://api.groq.com/openai/v1/chat/completions",
+  //       {
+  //         model: "llama3-8b-8192",
+  //         messages: [
+  //           { role: "system", content: "You are a book writer. Generate a minimum of 5 chapter titles and a maximum of 5 subchapter titles." },
+  //           {
+  //             role: "user",
+  //             content: `Generate chapter titles and subchapter titles based on the book title "${bookTitle}" or description: "${description}". Provide the response in the following JSON format:
 
-      // Get the generated data
-      let generatedData = response.data.choices[0].message.content.trim();
+  //         {
+  //           "chapters": [
+  //             {
+  //               "title": "Chapter 1 Title",
+  //               "content": "Chapter 1 Content",
+  //               "subchapters": [
+  //                 {
+  //                   "title": "Subchapter 1 Title",
+  //                   "content": "Subchapter 1 Content"
+  //                 },
+  //                 {
+  //                   "title": "Subchapter 2 Title",
+  //                   "content": "Subchapter 2 Content"
+  //                 }
+  //               ]
+  //             },
+  //             {
+  //               "title": "Chapter 2 Title",
+  //               "content": "Chapter 2 Content",
+  //               "subchapters": [
+  //                 {
+  //                   "title": "Subchapter 1 Title",
+  //                   "content": "Subchapter 1 Content"
+  //                 },
+  //                 {
+  //                   "title": "Subchapter 2 Title",
+  //                   "content": "Subchapter 2 Content"
+  //                 }
+  //               ]
+  //             }
+  //           ]
+  //         }`,
+  //           },
+  //         ],
+  //         max_tokens: 1000,
+  //       },
+  //       {
+  //         headers: {
+  //           Authorization: "Bearer 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", // Replace with your actual API key
+  //         },
+  //       }
+  //     );
 
-      // Strip any non-JSON text
-      const jsonStartIndex = generatedData.indexOf("{");
-      const jsonEndIndex = generatedData.lastIndexOf("}");
-      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
-        generatedData = generatedData.slice(jsonStartIndex, jsonEndIndex + 1);
-      } else {
-        throw new Error("JSON data not found in response");
-      }
+  //     // Get the generated data
+  //     let generatedData = response.data.choices[0].message.content.trim();
 
-      // Validate if the response is a valid JSON
-      let parsedData;
-      try {
-        parsedData = JSON.parse(generatedData);
-      } catch (error) {
-        console.error("Failed to parse generated data as JSON:", error);
-        throw new Error("Invalid JSON format");
-      }
+  //     // Strip any non-JSON text
+  //     const jsonStartIndex = generatedData.indexOf("{");
+  //     const jsonEndIndex = generatedData.lastIndexOf("}");
+  //     if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+  //       generatedData = generatedData.slice(jsonStartIndex, jsonEndIndex + 1);
+  //     } else {
+  //       throw new Error("JSON data not found in response");
+  //     }
 
-      // Update state with the generated text
-      setPreviewGeneratedText(parsedData); // Set previewGeneratedText instead of generatedText
+  //     // Validate if the response is a valid JSON
+  //     let parsedData;
+  //     try {
+  //       parsedData = JSON.parse(generatedData);
+  //     } catch (error) {
+  //       console.error("Failed to parse generated data as JSON:", error);
+  //       throw new Error("Invalid JSON format");
+  //     }
 
-      return parsedData; // Return the generated data for use in handleGenerate
-    } catch (error) {
-      console.error("Error generating text:", error);
-      return null;
-    } finally {
-      setIsLoading(false); // Set isLoading false after the request is complete
-    }
-  };
+  //     // Update state with the generated text
+  //     setPreviewGeneratedText(parsedData); // Set previewGeneratedText instead of generatedText
 
-  const handleGenerate = async (e) => {
-    e.preventDefault();
-    try {
-      const generatedData = await generateAI();
+  //     return parsedData; // Return the generated data for use in handleGenerate
+  //   } catch (error) {
+  //     console.error("Error generating text:", error);
+  //     return null;
+  //   } finally {
+  //     setIsLoading(false); // Set isLoading false after the request is complete
+  //   }
+  // };
 
-      if (!generatedData || !Array.isArray(generatedData.chapters)) {
-        console.error("Invalid response:", generatedData);
-        return;
-      }
+  // const handleGenerate = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const generatedData = await generateAI();
 
-      const newChapters = generatedData.chapters.map((chapter, index) => ({
-        chapId: `chapter_${index + 1}`,
-        title: chapter.title,
-        content: chapter.content,
-        subchapters: chapter.subchapters.map((subchapter, subIndex) => ({
-          subId: `subchapter_${index + 1}_${subIndex + 1}`,
-          title: subchapter.title,
-          content: subchapter.content,
-        })),
-      }));
+  //     if (!generatedData || !Array.isArray(generatedData.chapters)) {
+  //       console.error("Invalid response:", generatedData);
+  //       return;
+  //     }
 
-      // Save the new data to Firebase
-      const bookRef = doc(db, "books", booksId);
-      await updateDoc(bookRef, {
-        chapters: newChapters,
-      });
+  //     const newChapters = generatedData.chapters.map((chapter, index) => ({
+  //       chapId: `chapter_${index + 1}`,
+  //       title: chapter.title,
+  //       content: chapter.content,
+  //       subchapters: chapter.subchapters.map((subchapter, subIndex) => ({
+  //         subId: `subchapter_${index + 1}_${subIndex + 1}`,
+  //         title: subchapter.title,
+  //         content: subchapter.content,
+  //       })),
+  //     }));
 
-      // Update state chapters
-      setChapters(newChapters);
+  //     // Save the new data to Firebase
+  //     const bookRef = doc(db, "books", booksId);
+  //     await updateDoc(bookRef, {
+  //       chapters: newChapters,
+  //     });
 
-      // Get the updated book data from Firebase
-      const updatedBookSnap = await getDoc(bookRef);
-      if (updatedBookSnap.exists()) {
-        const updatedData = updatedBookSnap.data();
-        setBookData(updatedData);
-      } else {
-        console.error("Updated book data not found in Firebase.");
-      }
+  //     // Update state chapters
+  //     setChapters(newChapters);
 
-      console.log("Data successfully saved to Firebase.");
-    } catch (error) {
-      console.error("Error generating chapters:", error);
-    }
-  };
+  //     // Get the updated book data from Firebase
+  //     const updatedBookSnap = await getDoc(bookRef);
+  //     if (updatedBookSnap.exists()) {
+  //       const updatedData = updatedBookSnap.data();
+  //       setBookData(updatedData);
+  //     } else {
+  //       console.error("Updated book data not found in Firebase.");
+  //     }
+
+  //     console.log("Data successfully saved to Firebase.");
+  //   } catch (error) {
+  //     console.error("Error generating chapters:", error);
+  //   }
+  // };
 
   return (
     <div>
       <Flex direction="column" pl={{ base: "18vw", md: "12vw", lg: "6vw" }}>
-        <Flex direction={{ base: "column", lg: "row" }} pt="1.5" mx={{ base: "20%", md: "10%", lg: "10%" }} my={{ base: 4, md: 4 }} gap={4}>
+        <Flex direction={{ base: "column", lg: "row" }} pt="1.5" mx={{ base: "5%", md: "10%", lg: "10%" }} my={{ base: 4, md: 4 }} gap={4}>
           <Box>
-            <Box minW="300px" textAlign="center" p={{ base: "3%", lg: "5%" }} bg="white" borderRadius="lg">
+            <Box minW="300px" textAlign="center" px={{ base: "25%", md: "5%", lg: "5%" }} py="5%" bg="white" borderRadius="lg" justifyContent="center">
               <Text p="2%">{bookTitle}</Text>
-              <Image src={coverImageUrl} alt="Cover Image" minH={{ base: "180px", sm: "230px", md: "250px", lg: "300px" }} maxW={{ base: "130px", sm: "180px", md: "200px", lg: "200px" }} mx="auto" objectFit="cover" borderRadius={10} />
+              <Image
+                src={coverImageUrl}
+                alt="Cover Image"
+                minH={{ base: "180px", sm: "300px", md: "250px", lg: "500px" }}
+                maxW={{ base: "130px", sm: "250px", md: "400px", lg: "250px" }}
+                mx={{ base: "10%", md: "10%", lg: "5%" }}
+                objectFit="cover"
+                borderRadius={10}
+              />
               <Flex justify="center" my={4} direction={{ base: "column", xl: "row" }}>
                 <ButtonGroup justifyContent="center" p={5}>
-                  <Button onClick={openImageBox} leftIcon={<FcEditImage size="25px" />} colorScheme="blue" variant="solid" size="md">
-                    <Text fontWeight="100" display={{ base: "none", sm: "flex" }}>
+                  <Button onClick={openImageBox} leftIcon={<FcEditImage size="25px" />} colorScheme="blue" variant="solid" size="sm">
+                    <Text fontWeight="100" display={{ base: "none", sm: "flex" }} size>
                       Change Image
                     </Text>
                   </Button>
@@ -268,11 +274,38 @@ export default function Project() {
             </Box>
           </Box>
           <Flex w="full" direction="column">
-            <AccordionChapters />
+            <Box bg="white" px={10} py={5} borderRadius={10}>
+              <FormControl>
+                <Text fontSize="14px">Target Audience</Text>
+                <Input type="text" placeholder="Example : aspiring authors who want to self-publish a non-fiction book on Amazon" fontSize="12px" />
+                <br />
+                <Text fontSize="14px">Your Books Description/Outline :</Text>
+                <Textarea
+                  placeholder={`Example Outline:\n
+– Focus on following the outline and providing clear, logical thoughts with transitions between ideas.\n
+– When explaining a point that could be difficult to grasp, make sure to provide an example.\n
+– Use clear and straightforward subheadings and bullet points whenever appropriate to make your writing clear and organized.\n
+– Empathize with what the reader may be thinking without being overtly obvious about it. Make sure to point out any insights that could be counterintuitive.\n
+You are an authority on this subject, but do not talk about yourself or compare yourself to the reader. Be humble.\n
+Your writing should use short, punchy sentences, colloquial language, and contractions to create a compassionate and approachable tone, and use rhetorical questions, metaphors, and parallel structure to make your writing engaging and memorable.\n
+Use vivid and descriptive language to create a compelling narrative that draws the reader in and helps them to relate to your experience. Use sensory details and emotional language to create a sense of depth and resonance.`}
+                  h={{ base: "180px", md: "490px" }}
+                  onChange={(e) => setDescription(e.target.value)}
+                  fontSize="12px"
+                />
+
+                <FormHelperText>Describe Your Books outline and any many more</FormHelperText>
+                <Box align="end">
+                  <Button colorScheme="green" size="sm" onClick={() => router.push(`./${booksId}/new`)}>
+                    Submit
+                  </Button>
+                </Box>
+              </FormControl>
+            </Box>
           </Flex>
         </Flex>
       </Flex>
-      <Flex pl={{ base: "18vw", md: "12vw", lg: "6vw" }}>
+      {/* <Flex pl={{ base: "18vw", md: "12vw", lg: "6vw" }}>
         <Flex direction="column" w="full" px={{ base: "20%", md: "8%", lg: "8%" }}>
           <Box px="2%" py="2%" mx="2%" mb="5%" bg="white" borderRadius="xl">
             <Box align="end">
@@ -292,7 +325,7 @@ export default function Project() {
             </Box>
           </Box>
         </Flex>
-      </Flex>
+      </Flex> */}
 
       {/* modal image Change */}
       <Modal isOpen={isImageBoxVisible} onClose={closeImageBox}>
