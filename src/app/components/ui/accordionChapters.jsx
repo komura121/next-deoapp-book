@@ -3,6 +3,7 @@ import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIco
 import { useRouter } from "next/router";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/services/api/firebase";
+import axios from "axios";
 
 export default function AccordionChapters() {
   const router = useRouter();
@@ -10,7 +11,14 @@ export default function AccordionChapters() {
   const [coverImageUrl, setCoverImageUrl] = useState("");
   const [chapters, setChapters] = useState([]);
   const [bookTitle, setBookTitle] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewGeneratedText, setPreviewGeneratedText] = useState(null);
+  const [bookTopic, setBookTopic] = useState("");
+  const [description, setDescription] = useState("");
 
+  useEffect(() => {
+    setChapters([]);
+  }, [setChapters]);
   useEffect(() => {
     const fetchBookData = async () => {
       if (!booksId) {
@@ -107,7 +115,6 @@ export default function AccordionChapters() {
         throw new Error("JSON data not found in response");
       }
 
-      // Validate if the response is a valid JSON
       let parsedData;
       try {
         parsedData = JSON.parse(generatedData);
