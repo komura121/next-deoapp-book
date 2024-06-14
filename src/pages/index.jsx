@@ -135,26 +135,29 @@ export default function index() {
     router.push(`/project/${booksId}`);
   };
   return (
-    <Box pl={{ base: "2vw", sm: "4vw", md: "8vw", lg: "6vw" }}>
-      <VStack bgImage="./fixa.gif" bgRepeat="no-repeat" bgColor="white" objectFit="contain" bgPos="center" px={{ base: "20%", md: "20%", lg: "10%" }} maxW="100%">
-        <Heading size="3xl" fontFamily="poppins">
-          <Image src="./HeaderLogo.png" alt="Logo" width="200" height="100" maxH="350px" />
-        </Heading>
+    <Box>
+      <HStack>
+        <VStack bgImage="./fixa.gif" bgRepeat="no-repeat" bgColor="white" objectFit="contain" bgPos="center" maxW="100%" px={20}>
+          <Heading size="3xl" fontFamily="poppins">
+            <Image src="./HeaderLogo.png" alt="Logo" width="200" height="100" maxH="350px" />
+          </Heading>
 
-        <Heading align={{ base: "center", lg: "left" }} ml="5%" mr={{ base: "5%", lg: "40%" }}>
-          Write a Book with AI Assistant.
-        </Heading>
-        <Text align="center" ml="5%" mr={{ base: "5%", lg: "40%" }} fontSize="lg" fontWeight="600">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum ex, ipsum accusantium molestiae deleniti natus voluptatum iusto, voluptatem tenetur, vero nam! Ipsa optio delectus ut illo aspernatur natus iure. Debitis. Sunt ab
-          dolorem saepe, repellendus, soluta sapiente recusandae at, porro eveniet similique vitae nobis iusto repellat.
-        </Text>
+          <Heading align={{ base: "center", lg: "left" }} ml="5%" mr={{ base: "5%", lg: "40%" }}>
+            Write a Book with AI Assistant.
+          </Heading>
+          <Text align="center" ml="5%" mr={{ base: "5%", lg: "40%" }} fontSize="md" fontWeight="600">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum ex, ipsum accusantium molestiae deleniti natus voluptatum iusto, voluptatem tenetur, vero nam! Ipsa optio delectus ut illo aspernatur natus iure. Debitis. Sunt ab
+            dolorem saepe, repellendus, soluta sapiente recusandae at, porro eveniet similique vitae nobis iusto repellat.
+          </Text>
 
-        <Box align={{ base: "center", lg: "end" }} mx="10%" my="2%">
-          <Button onClick={onOpen} colorScheme="yellow" height="50px">
-            Create New Book
-          </Button>
-        </Box>
-      </VStack>
+          <Box align={{ base: "center", lg: "end" }} mx="10%" my="2%">
+            <Button onClick={onOpen} colorScheme="yellow" height="50px">
+              Create New Book
+            </Button>
+          </Box>
+        </VStack>
+      </HStack>
+
       <Flex direction="column" justify="center">
         <Box maxH="100%" pt={10} pb={20} px={{ base: "20%", md: "20%", lg: "10%" }} borderRadius={20}>
           <Heading py={6} textAlign="center" size="lg">

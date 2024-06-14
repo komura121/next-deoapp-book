@@ -57,15 +57,6 @@ export default function Project() {
               </Flex>
             </Box>
           </Box>
-          <Flex w="full" direction="column">
-            <Box flex="1" bg="white" borderRadius="lg" px="5%" w="full">
-              <Heading as="h2" size="md" my={5} fontWeight="600">
-                {bookTitle || "Loading..."}
-              </Heading>
-              <Box>{bookData?.chapters ? bookData.chapters.map((chapter, index) => <Button key={index}>{chapter.heading}</Button>) : <Text>No chapters available</Text>}</Box>
-            </Box>
-            <Box>{/* <Text>{result}</Text> */}</Box>
-          </Flex>
         </Flex>
 
         <Flex direction="column" px={{ base: "20%", md: "8%", lg: "8%" }}>

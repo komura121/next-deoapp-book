@@ -7,8 +7,8 @@ export default function Layout({ children }) {
   return (
     <>
       <Sidebar />
-      <Box pl="10vw">{children}</Box>
-      <Footer />
+      <Box>{children}</Box>
+
       <Background />
     </>
   );

@@ -63,7 +63,7 @@ export default function Login() {
     }
   };
   return (
-    <Flex w="full" h="100vh" justify="center" align="center" bgImage="https://buildfire.com/wp-content/themes/buildfire/assets/images/gsf-hero-sm.jpg" bgPos="center" bgRepeat="no-repeat">
+    <Flex w="full" h="100vh" justify="center" align="center" bgImage="./bgBaru.png" bgRepeat="no-repeat" objectFit="fill">
       <Box
         w={{ base: "90%", md: "400px" }}
         p={8}
